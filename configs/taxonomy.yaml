@@ -1,0 +1,74 @@
+version: "food-reviews-taxonomy-v1"
+aspects:
+  produto:
+    - code: sabor
+      description: "Sabor, tempero e palatabilidade"
+      examples: ["delicioso", "sem gosto", "salgado", "enjoativo"]
+    - code: qualidade
+      description: "Qualidade geral ou dos ingredientes quando não houver aspecto mais específico"
+      examples: ["ingredientes frescos", "produto estragado", "carne de baixa qualidade"]
+    - code: quantidade
+      description: "Tamanho, volume, recheio ou tamanho da porção"
+      examples: ["porção pequena", "veio bastante", "pouco recheio"]
+    - code: temperatura
+      description: "Temperatura do alimento ou bebida"
+      examples: ["chegou frio", "estava quente", "sorvete derretido"]
+    - code: aparencia
+      description: "Apresentação, montagem e aparência visual"
+      examples: ["bem montado", "veio destruído", "aparência ruim"]
+    - code: preparo
+      description: "Execução e ponto de preparo"
+      examples: ["carne crua", "massa queimada", "ponto correto"]
+  loja:
+    - code: atendimento
+      description: "Comunicação, suporte e tratamento oferecido pela loja"
+      examples: ["respondeu rápido", "foi grosseiro", "não respondeu"]
+    - code: pedido_correto
+      description: "Correção e completude dos itens recebidos"
+      examples: ["faltou bebida", "veio item errado", "pedido completo"]
+    - code: embalagem
+      description: "Proteção, lacre e acondicionamento"
+      examples: ["embalagem vazando", "bem embalado", "lacre violado"]
+    - code: custo_beneficio
+      description: "Relação entre preço e experiência recebida"
+      examples: ["caro pelo que oferece", "vale o preço"]
+  entrega:
+    - code: tempo_entrega
+      description: "Rapidez, demora ou atraso"
+      examples: ["chegou rápido", "atrasou uma hora"]
+    - code: condicao_entrega
+      description: "Estado físico do pedido ao chegar"
+      examples: ["chegou amassado", "bebida derramada"]
+
+entity_mapping:
+  sabor: produto
+  qualidade: produto
+  quantidade: produto
+  temperatura: produto
+  aparencia: produto
+  preparo: produto
+  atendimento: loja
+  pedido_correto: loja
+  embalagem: loja
+  custo_beneficio: loja
+  tempo_entrega: entrega
+  condicao_entrega: entrega
+
+sentiments:
+  - positivo
+  - negativo
+  - neutro
+
+aspect_order:
+  - sabor
+  - qualidade
+  - quantidade
+  - temperatura
+  - aparencia
+  - preparo
+  - atendimento
+  - pedido_correto
+  - embalagem
+  - custo_beneficio
+  - tempo_entrega
+  - condicao_entrega

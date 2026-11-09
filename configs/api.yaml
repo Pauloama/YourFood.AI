@@ -1,0 +1,18 @@
+server:
+  host: "0.0.0.0"
+  port: 8000
+
+models:
+  aspect_detector_path: artifacts/aspect-detector/bertimbau-aspects-v1
+  sentiment_classifier_path: artifacts/sentiment-classifier/bertimbau-aspect-sentiment-v1
+
+limits:
+  max_text_length: 1024
+  max_batch_size: 32
+
+logging:
+  level: INFO
+  log_full_text: false
+
+versions:
+  taxonomy: "food-reviews-taxonomy-v1"

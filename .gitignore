@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Model weights and artifacts
+*.pt
+*.bin
+*.safetensors
+artifacts/**/*
+!artifacts/.gitkeep
+
+# Data contents (keep directory structure)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/splits/*
+!data/splits/.gitkeep
+
+# Reports contents (keep directory structure)
+reports/*.json
+reports/*.md
+!reports/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db

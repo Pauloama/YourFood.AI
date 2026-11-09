@@ -1,0 +1,28 @@
+model:
+  base_model: neuralmind/bert-base-portuguese-cased
+  num_labels: 12
+  version: "bertimbau-aspects-v1"
+
+data:
+  input_path: data/splits
+  max_length: 128
+
+training:
+  batch_size: 16
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  epochs: 5
+  warmup_ratio: 0.1
+  gradient_accumulation_steps: 1
+  seed: 42
+  early_stopping_patience: 2
+  mixed_precision: true
+  output_dir: artifacts/aspect-detector/bertimbau-aspects-v1
+  save_checkpoints: true
+  checkpoint_dir: artifacts/aspect-detector/checkpoints
+  log_dir: reports/training/aspects
+
+metrics:
+  primary: macro_f1
+  threshold_search_min: 0.10
+  threshold_search_max: 0.90

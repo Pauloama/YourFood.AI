@@ -1,0 +1,26 @@
+model:
+  base_model: neuralmind/bert-base-portuguese-cased
+  num_labels: 3
+  version: "bertimbau-aspect-sentiment-v1"
+
+data:
+  input_path: data/splits
+  max_length: 128
+
+training:
+  batch_size: 16
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  epochs: 5
+  warmup_ratio: 0.1
+  gradient_accumulation_steps: 1
+  seed: 42
+  early_stopping_patience: 2
+  mixed_precision: true
+  output_dir: artifacts/sentiment-classifier/bertimbau-aspect-sentiment-v1
+  save_checkpoints: true
+  checkpoint_dir: artifacts/sentiment-classifier/checkpoints
+  log_dir: reports/training/sentiment
+
+metrics:
+  primary: macro_f1
