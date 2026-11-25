@@ -1,0 +1,90 @@
+{
+  "validation_timestamp": "2026-11-25T16:05:38.092838",
+  "status": "approved_with_warnings",
+  "summary": {
+    "total_records": 6,
+    "total_reviews": 2,
+    "records_with_aspects": 6,
+    "records_without_aspects": 0,
+    "unique_users": 1,
+    "unique_stores": 2,
+    "unique_orders": 2
+  },
+  "aspect_distribution": {
+    "temperatura": 2,
+    "preparo": 1,
+    "embalagem": 1,
+    "sabor": 1,
+    "tempo_entrega": 1
+  },
+  "sentiment_by_aspect": {
+    "embalagem": {
+      "positivo": 1
+    },
+    "preparo": {
+      "positivo": 1
+    },
+    "sabor": {
+      "positivo": 1
+    },
+    "temperatura": {
+      "positivo": 1,
+      "negativo": 1
+    },
+    "tempo_entrega": {
+      "negativo": 1
+    }
+  },
+  "conflicts": {
+    "count": 0,
+    "details": []
+  },
+  "duplicates": {
+    "exact_count": 0,
+    "details": []
+  },
+  "requires_review_count": 0,
+  "class_warnings": {
+    "below_200": [
+      "sabor",
+      "qualidade",
+      "quantidade",
+      "temperatura",
+      "aparencia",
+      "preparo",
+      "atendimento",
+      "pedido_correto",
+      "embalagem",
+      "custo_beneficio",
+      "tempo_entrega",
+      "condicao_entrega"
+    ],
+    "below_500_risk": [],
+    "imbalanced": [
+      "sabor",
+      "preparo",
+      "embalagem",
+      "tempo_entrega"
+    ]
+  },
+  "errors": [],
+  "warnings": [],
+  "recommendations": [
+    "Aspect 'sabor' has only 1 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'sabor' has 100% 'positivo' sentiment. Consider balancing the distribution.",
+    "Aspect 'qualidade' has only 0 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'quantidade' has only 0 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'temperatura' has only 2 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'aparencia' has only 0 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'preparo' has only 1 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'preparo' has 100% 'positivo' sentiment. Consider balancing the distribution.",
+    "Aspect 'atendimento' has only 0 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'pedido_correto' has only 0 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'embalagem' has only 1 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'embalagem' has 100% 'positivo' sentiment. Consider balancing the distribution.",
+    "Aspect 'custo_beneficio' has only 0 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'tempo_entrega' has only 1 examples (< 200 minimum). Consider collecting more data.",
+    "Aspect 'tempo_entrega' has 100% 'negativo' sentiment. Consider balancing the distribution.",
+    "Aspect 'condicao_entrega' has only 0 examples (< 200 minimum). Consider collecting more data."
+  ]
+}

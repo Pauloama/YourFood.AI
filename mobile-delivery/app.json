@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "YourFood.AI Delivery",
+    "slug": "yourfood-mobile-delivery",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ai.yourfood.delivery"
+    },
+    "android": {
+      "package": "ai.yourfood.delivery"
+    }
+  }
+}

@@ -1,29 +1,88 @@
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: yourfood-postgres
+    environment:
+      POSTGRES_DB: yourfood
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_fintech_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d yourfood"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   absa-api:
     build:
-      context: .
+      context: ./bertimbau-absa
       dockerfile: Dockerfile
-    image: bertimbau-absa:latest
-    container_name: bertimbau-absa-api
+    container_name: yourfood-absa-api
     ports:
       - "8000:8000"
     environment:
-      - API_HOST=0.0.0.0
-      - API_PORT=8000
-      - LOG_LEVEL=INFO
-      - LOG_FULL_TEXT=false
-      - MAX_TEXT_LENGTH=1024
-      - MAX_BATCH_SIZE=32
-      - MODEL_PATH=/app/artifacts
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      LOG_LEVEL: INFO
+      LOG_FULL_TEXT: "false"
+      MODEL_PATH: /app/artifacts
     volumes:
-      - ./artifacts:/app/artifacts:ro
-      - ./configs:/app/configs:ro
+      - ./bertimbau-absa/artifacts:/app/artifacts
+      - ./bertimbau-absa/data:/app/data
+      - ./bertimbau-absa/reports:/app/reports
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
+
+  backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: yourfood-backend-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=yourfood;Username=postgres;Password=postgres_fintech_password
+      Jwt__Issuer: YourFood.AI
+      Jwt__Audience: YourFood.Clients
+      Jwt__SigningKey: YourFood_Fintech_Super_Secret_Key_2026_Minimum_32_Bytes_Long!
+      AbsaService__BaseUrl: http://absa-api:8000
+      AbsaService__PipelineRootPath: /pipeline
+      AbsaService__PythonExecutable: python3
+      SeedDatabaseOnStartup: "true"
+    volumes:
+      - ./bertimbau-absa:/pipeline
+    restart: unless-stopped
+
+  web-delivery:
+    build:
+      context: ./web-delivery
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5000
+    container_name: yourfood-web-delivery
+    depends_on:
+      - backend-api
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+  web-pipeline-console:
+    build:
+      context: ./web-pipeline-console
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5000
+    container_name: yourfood-web-pipeline-console
+    depends_on:
+      - backend-api
+    ports:
+      - "5174:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

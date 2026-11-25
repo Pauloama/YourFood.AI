@@ -1,54 +1,58 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-*.pyc
-*.pyo
-*.egg-info/
-dist/
-build/
-*.egg
+*.so
 
-# Virtual environments
+# Environments
+.env
 .venv/
-venv/
 env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# IDE
-.vscode/
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# PyTorch & Hugging Face weights / models
+*.pt
+*.pth
+*.bin
+*.safetensors
+artifacts/**/*.pt
+artifacts/**/*.bin
+artifacts/**/*.safetensors
+
+# Data splits & raw big data (keep directories)
+bertimbau-absa/data/raw/*.jsonl
+!bertimbau-absa/data/raw/sample_reviews.jsonl
+bertimbau-absa/data/raw/*.csv
+bertimbau-absa/data/processed/*.jsonl
+bertimbau-absa/data/splits/*.jsonl
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
 .idea/
+.vscode/
 *.swp
 *.swo
 
-# Environment
-.env
+# .NET
+backend/**/bin/
+backend/**/obj/
 
-# Testing
-.pytest_cache/
-htmlcov/
-.coverage
-coverage.xml
+# Node / React / React Native
+node_modules/
+**/node_modules/
+**/dist/
+**/.expo/
 
-# Model weights and artifacts
-*.pt
-*.bin
-*.safetensors
-artifacts/**/*
-!artifacts/.gitkeep
-
-# Data contents (keep directory structure)
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-data/splits/*
-!data/splits/.gitkeep
-
-# Reports contents (keep directory structure)
-reports/*.json
-reports/*.md
-!reports/.gitkeep
-
-# OS
-.DS_Store
-Thumbs.db

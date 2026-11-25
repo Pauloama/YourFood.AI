@@ -1,389 +1,337 @@
-# YourFood.AI — Aspect-Based Sentiment Analysis (ABSA) Pipeline
+# YourFood.AI — Plataforma de Delivery Fintech & Pipeline BERTimbau ABSA
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white" alt="Python 3.11+"/>
-  <img src="https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c?logo=pytorch&logoColor=white" alt="PyTorch"/>
-  <img src="https://img.shields.io/badge/Hugging%20Face-BERTimbau-yellow?logo=huggingface&logoColor=white" alt="Hugging Face"/>
-  <img src="https://img.shields.io/badge/FastAPI-0.100%2B-009688?logo=fastapi&logoColor=white" alt="FastAPI"/>
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white" alt="Docker"/>
-  <img src="https://img.shields.io/badge/Tests-35%20passed%20(100%25)-brightgreen" alt="Tests"/>
+  <img src="https://img.shields.io/badge/.NET-10%20ASP.NET%20Core-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL 16"/>
+  <img src="https://img.shields.io/badge/React-Vite%20%2B%20TS-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React + Vite"/>
+  <img src="https://img.shields.io/badge/React%20Native-Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="React Native"/>
+  <img src="https://img.shields.io/badge/PyTorch-BERTimbau%20ABSA-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch BERTimbau"/>
+  <img src="https://img.shields.io/badge/FastAPI-ML%20Inference-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
+  <img src="https://img.shields.io/badge/Auth-JWT%20%2B%20OAuth2-F59E0B?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT + OAuth2"/>
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
 </p>
 
-Pipeline de **Aspect-Based Sentiment Analysis (ABSA)** em português brasileiro baseado no modelo pré-treinado **BERTimbau Base** (`neuralmind/bert-base-portuguese-cased`).
-
-O pipeline foi projetado para processar avaliações de pedidos de delivery de comida de ponta a ponta: recebe o texto livre do consumidor, identifica múltiplos aspectos específicos da experiência, classifica a polaridade de sentimento de cada aspecto e associa automaticamente a entidade de negócio correspondente (`produto`, `loja` ou `entrega`).
+<p align="center">
+  <strong>Ecossistema completo de Delivery (Web + Mobile) construído sob arquitetura Fintech para coletar avaliações reais de pedidos e alimentar ponta a ponta um pipeline de Aspect-Based Sentiment Analysis (ABSA) com BERTimbau em Português Brasileiro, acompanhado de um Console Web MLOps independente para execução do pipeline e inferência dos modelos.</strong>
+</p>
 
 ---
 
 ## Sumário
 
-- [Visão Geral e Arquitetura](#-visão-geral-e-arquitetura)
-- [Taxonomia Oficial do MVP](#-taxonomia-oficial-do-mvp)
-- [Estrutura do Repositório](#-estrutura-do-repositório)
-- [Instalação e Ambiente](#-instalação-e-ambiente)
-- [Ciclo Completo de Dados](#-ciclo-completo-de-dados)
-  - [1. Validação do Dataset](#1-validação-do-dataset)
-  - [2. Preparação e Normalização](#2-preparação-e-normalização)
-  - [3. Divisão sem Vazamento](#3-divisão-sem-vazamento)
-- [Treinamento dos Modelos](#-treinamento-dos-modelos)
-  - [Modelo 1: Detector de Aspectos](#modelo-1-detector-multirrótulo-de-aspectos)
-  - [Modelo 2: Classificador de Sentimento](#modelo-2-classificador-de-sentimento-por-aspecto)
-- [Avaliação Integrada do Pipeline](#-avaliação-integrada-do-pipeline)
-- [API REST (FastAPI)](#-api-rest-fastapi)
-  - [Endpoints e Exemplos](#endpoints-e-exemplos)
-- [Execução com Docker](#-execução-com-docker)
-- [Testes Automatizados](#-testes-automatizados)
-- [Critérios para Novos Aspectos](#-critérios-para-inclusão-de-novos-aspectos)
+- [Visão Geral](#-visão-geral)
+- [Arquitetura da Plataforma](#-arquitetura-da-plataforma)
+- [Máquina de Estados de Pedidos & Ledger Fintech](#-máquina-de-estados-de-pedidos--ledger-fintech)
+- [Arquitetura do Pipeline BERTimbau ABSA](#-arquitetura-do-pipeline-bertimbau-absa)
+- [Taxonomia Oficial (12 Aspectos)](#-taxonomia-oficial-12-aspectos)
+- [Princípios de Engenharia e Segurança](#-princípios-de-engenharia-e-segurança)
+- [Estrutura do Monorepo](#-estrutura-do-monorepo)
+- [Catálogo de Endpoints REST](#-catálogo-de-endpoints-rest)
+- [Execução Rápida com Docker Compose](#-execução-rápida-com-docker-compose)
+- [Execução Local por Módulo](#-execução-local-por-módulo)
+- [Contas de Demonstração (Seed Automático)](#-contas-de-demonstração-seed-automático)
+- [Testes e Validação](#-testes-e-validação)
+- [Licença](#-licença)
 
 ---
 
-## 🏗 Visão Geral e Arquitetura
+## Visão Geral
 
-O sistema emprega uma arquitetura desacoplada em dois estágios, garantindo inferência rápida, determinística e sem dependência de LLMs em produção:
+O **YourFood.AI** une duas frentes integradas em um único ecossistema:
+
+1. **Aplicação de Delivery (Web Responsivo + Mobile + Backend ASP.NET Core)**
+   - **Clientes (`Customer`)**: navegam por restaurantes e cardápios com filtros de categoria e busca, montam sacola com checkout idempotente (incluindo barra flutuante de sacola em telas mobile), acompanham pedidos em tempo real com barra de progresso e máquina de estados, e enviam avaliações pós-entrega (nota interativa de 1 a 5 estrelas, texto livre e destaques opcionais da taxonomia oficial).
+   - **Donos de Restaurantes (`StoreOwner`)**: visualizam KPIs operacionais (pedidos ativos, faturamento bruto do ledger e nota média), cadastram/gerenciam lojas e itens de cardápio, avançam o estado dos pedidos com extrato contábil (`LedgerEntry`) e acompanham a percepção dos clientes por aspecto.
+2. **Sistema Web Separado de MLOps & Inferência (`web-pipeline-console` + `bertimbau-absa`)**
+   - **Administradores MLOps (`Admin`)**: monitoram a saúde da API BERTimbau e a distribuição de sentimentos por entidade/aspecto com barras proporcionais, exportam avaliações do PostgreSQL em `.jsonl` / `.csv`, revisam conflitos (`requires_review`), executam as etapas do pipeline `bertimbau-absa` (`export`, `validate`, `prepare`, `split`, `train`, `evaluate`, `export_models`) com visualização de logs/relatórios JSON, e rodam inferência individual, em lote ou diagnóstica com medidores de confiança.
+
+---
+
+## Arquitetura da Plataforma
+
+```mermaid
+flowchart LR
+    WebDelivery["Web Delivery\nReact + Vite (:5173)"] --> Backend
+    MobileDelivery["Mobile Delivery\nReact Native / Expo"] --> Backend
+    ConsoleMLOps["Web Pipeline Console\nReact + Vite (:5174)"] --> Backend
+
+    Backend["ASP.NET Core 10 API\nClean Arch + SOLID + Fintech (:5000)"] --> Postgres[("PostgreSQL 16\nEF Core + Ledger + Audit")]
+    Backend --> AbsaApi["BERTimbau ABSA API\nFastAPI + PyTorch (:8000)"]
+    Backend --> PipelineCLI["bertimbau-absa CLI\nvalidate / prepare / split / train / eval"]
+
+    PipelineCLI --> Artifacts[("Model Artifacts\nWeights + Tokenizer + Thresholds")]
+    Artifacts --> AbsaApi
+```
+
+| Módulo | Diretório | Stack Principal | Porta Padrão |
+|---|---|---|---|
+| **Backend API** | [`backend/`](./backend) | ASP.NET Core 10, EF Core 9, Npgsql, JWT/OAuth2, Swagger, xUnit | `:5000` |
+| **Delivery Web** | [`web-delivery/`](./web-delivery) | React 19, Vite 6, TypeScript | `:5173` |
+| **Delivery Mobile** | [`mobile-delivery/`](./mobile-delivery) | React Native, Expo 52, TypeScript, AsyncStorage | Expo Dev |
+| **Console MLOps Web** | [`web-pipeline-console/`](./web-pipeline-console) | React 19, Vite 6, TypeScript | `:5174` |
+| **Pipeline ML & API** | [`bertimbau-absa/`](./bertimbau-absa) | Python 3.11+, PyTorch, Transformers (BERTimbau), FastAPI, pytest | `:8000` |
+| **Banco de Dados** | Docker Service `postgres` | PostgreSQL 16 Alpine | `:5432` |
+
+---
+
+## Máquina de Estados de Pedidos & Ledger Fintech
+
+O tracking de pedidos é governado por uma máquina de estados determinística no domínio ([OrderEntities.cs](./backend/src/YourFood.Domain/Entities/OrderEntities.cs)), registrando histórico imutável de transições (`OrderStateTransition`) e lançamentos financeiros (`LedgerEntry`) com precisão monetária `decimal(18,2)`:
+
+```mermaid
+stateDiagram-v2
+    [*] --> PendingPayment : OrderCharge (+Total)
+    PendingPayment --> Confirmed : Pagamento Autorizado
+    Confirmed --> Preparing : Cozinha Iniciou
+    Preparing --> ReadyForPickup : Pedido Lacrado
+    ReadyForPickup --> OutForDelivery : Entregador em Rota
+    OutForDelivery --> Delivered : MerchantSettlement (+Subtotal)
+
+    PendingPayment --> Cancelled : OrderRefund (-Total)
+    Confirmed --> Cancelled : OrderRefund (-Total)
+    Preparing --> Cancelled : OrderRefund (-Total)
+    ReadyForPickup --> Cancelled : OrderRefund (-Total)
+    OutForDelivery --> Cancelled : OrderRefund (-Total)
+
+    Delivered --> [*] : Libera Avaliação ABSA
+    Cancelled --> [*]
+```
+
+---
+
+## Arquitetura do Pipeline BERTimbau ABSA
+
+Sem uso de LLMs em treinamento ou inferência — determinístico, versionado e preparado para persistência analítica e motores de recomendação:
 
 ```mermaid
 flowchart TD
-    Review[Texto da Avaliação] --> M1[Modelo 1: Detector Multirrótulo<br/>BERTimbau + Sigmoid + Calibração F1]
-    M1 --> Sigmoid[Vetor de 12 Probabilidades]
-    Sigmoid --> ThresholdCheck{Supera Thresholds<br/>Calibrados?}
-    
-    ThresholdCheck -- Não --> NoAspects[Retorna aspects: vazio]
-    ThresholdCheck -- Sim --> Detected[Aspectos Filtrados]
-    
-    Detected --> PairGen[Geração de Pares de Sentença<br/>CLS texto SEP aspecto SEP]
-    PairGen --> M2[Modelo 2: Classificador de Sentimento<br/>BERTimbau + Softmax]
-    
-    M2 --> SentProbs[Sentimento: positivo / negativo / neutro]
-    SentProbs --> TaxonomyMap[Mapeamento Fixo de Entidades<br/>produto / loja / entrega]
-    TaxonomyMap --> FinalResponse[JSON Estruturado & Versionado]
+    Text["Texto da Avaliação (PT-BR)"] --> M1["Modelo 1: Detector Multirrótulo\nBERTimbau Base + Sigmoid"]
+    M1 --> Thresh{"Probabilidade >= Threshold\nCalibrado por Aspecto?"}
+    Thresh -- Não --> Empty["aspects: []"]
+    Thresh -- Sim --> Pairs["Pares de Sentença\n[CLS] texto [SEP] aspecto [SEP]"]
+    Pairs --> M2["Modelo 2: Sentimento Condicionado\nBERTimbau Base + Softmax"]
+    M2 --> Entity["Mapeamento Fixo de Entidade\nproduto / loja / entrega"]
+    Entity --> Output["JSON Estruturado + Versões + Latência"]
 ```
 
-### Modelo 1: Detector Multirrótulo de Aspectos
-- **Backbone**: `neuralmind/bert-base-portuguese-cased`
-- **Camada de saída**: Linear (12 saídas binárias independentes) + ativação `sigmoid`
-- **Função de perda**: `BCEWithLogitsLoss` com ponderação `pos_weight` calculada exclusivamente no split de treino
-- **Calibração**: Otimização independente de limiar (threshold) por aspecto no conjunto de validação para maximização de F1 (faixa `0.10` a `0.90`)
-
-### Modelo 2: Classificador de Sentimento Condicionado ao Aspecto
-- **Backbone**: `neuralmind/bert-base-portuguese-cased`
-- **Formato de entrada**: Pares de sentenças pelo tokenizer do BERT:
-  ```text
-  [CLS] O hambúrguer estava bom, mas chegou frio. [SEP] temperatura [SEP]
-  ```
-- **Camada de saída**: Linear (3 saídas: `positivo`, `negativo`, `neutro`) + ativação `softmax`
-- **Função de perda**: `CrossEntropyLoss` com balanceamento de pesos de classe
-
-### Mapeamento Fixo de Entidades
-A atribuição da entidade de negócio é feita por regras estritas e imutáveis da taxonomia, sem necessidade de inferência probabilística adicional.
+- **Modelo 1 (`AspectDetector`)**: 12 saídas independentes (`BCEWithLogitsLoss` + `pos_weight` sobre o treino) com calibração individual de thresholds F1 (`0.10` a `0.90`) na validação.
+- **Modelo 2 (`SentimentClassifier`)**: Classificação em 3 classes (`positivo`, `negativo`, `neutro`) via `CrossEntropyLoss` ponderado, executado somente para os aspectos detectados pelo Modelo 1 (além de endpoint diagnóstico isolado).
 
 ---
 
-## 📋 Taxonomia Oficial do MVP
+## Taxonomia Oficial (12 Aspectos)
 
-A taxonomia oficial é mantida centralizada em `configs/taxonomy.yaml` (`food-reviews-taxonomy-v1`):
+Centralizada e compartilhada entre o pipeline ML ([configs/taxonomy.yaml](./bertimbau-absa/configs/taxonomy.yaml)) e o domínio .NET ([AbsaTaxonomy.cs](./backend/src/YourFood.Domain/Constants/AbsaTaxonomy.cs)):
 
-| Entidade | Código do Aspecto | Descrição | Exemplos |
+| Entidade | Código | Descrição | Exemplos |
 |---|---|---|---|
-| **produto** | `sabor` | Sabor, tempero e palatabilidade | delicioso, sem gosto, salgado, enjoativo |
-| **produto** | `qualidade` | Qualidade geral ou dos ingredientes | ingredientes frescos, produto estragado, carne de baixa qualidade |
-| **produto** | `quantidade` | Tamanho, volume, porção ou recheio | porção pequena, veio bastante, pouco recheio |
-| **produto** | `temperatura` | Temperatura do alimento ou bebida | chegou frio, estava quente, sorvete derretido |
-| **produto** | `aparencia` | Apresentação, montagem e aparência visual | bem montado, veio destruído, aparência ruim |
-| **produto** | `preparo` | Execução e ponto de preparo | carne crua, massa queimada, ponto correto |
-| **loja** | `atendimento` | Comunicação, suporte e tratamento | respondeu rápido, foi grosseiro, não respondeu |
-| **loja** | `pedido_correto` | Correção e completude dos itens recebidos | faltou bebida, veio item errado, pedido completo |
-| **loja** | `embalagem` | Proteção, lacre e acondicionamento | embalagem vazando, bem embalado, lacre violado |
-| **loja** | `custo_beneficio` | Relação entre preço e experiência recebida | caro pelo que oferece, vale o preço |
-| **entrega** | `tempo_entrega` | Rapidez, demora ou atraso na entrega | chegou rápido, atrasou uma hora |
+| **produto** | `sabor` | Sabor, tempero e palatabilidade | delicioso, sem gosto, salgado |
+| **produto** | `qualidade` | Qualidade geral ou dos ingredientes | ingredientes frescos, estragado |
+| **produto** | `quantidade` | Tamanho, volume, porção ou recheio | porção pequena, veio bastante |
+| **produto** | `temperatura` | Temperatura do alimento ou bebida | chegou frio, estava quente |
+| **produto** | `aparencia` | Apresentação, montagem e visual | bem montado, veio destruído |
+| **produto** | `preparo` | Execução e ponto de preparo | carne crua, massa queimada |
+| **loja** | `atendimento` | Comunicação, suporte e tratamento | respondeu rápido, grosseiro |
+| **loja** | `pedido_correto` | Correção e completude dos itens | faltou bebida, veio item errado |
+| **loja** | `embalagem` | Proteção, lacre e acondicionamento | embalagem vazando, lacre violado |
+| **loja** | `custo_beneficio` | Relação preço × experiência | caro pelo que oferece, vale o preço |
+| **entrega** | `tempo_entrega` | Rapidez, demora ou atraso | chegou rápido, atrasou uma hora |
 | **entrega** | `condicao_entrega` | Estado físico do pedido ao chegar | chegou amassado, bebida derramada |
 
 ---
 
-## 📁 Estrutura do Repositório
+## Princípios de Engenharia e Segurança
+
+- **Clean Architecture & SOLID**: Separação rigorosa em `YourFood.Domain`, `YourFood.Application`, `YourFood.Infrastructure` e `YourFood.Api`.
+- **Repository Pattern & Unit of Work**: Repositórios especializados (`IUserRepository`, `IStoreRepository`, `IOrderRepository`, `IReviewRepository`, `IPipelineJobRepository`, `IAuditLogRepository`, `IIdempotencyRepository`) com commits atômicos via `IUnitOfWork`.
+- **Clean Code sem comentários**: Todo o código-fonte do backend, web delivery, mobile e console MLOps foi escrito com nomes autoexplicativos, métodos coesos e zero comentários.
+- **Segurança JWT & OAuth2**:
+  - Access Tokens JWT (HMAC-SHA256) + rotação e revogação de Refresh Tokens com hash SHA-256 em banco.
+  - Fluxo **OAuth2 Authorization Code + PKCE** (`/api/v1/auth/oauth2/authorize` e `/api/v1/auth/oauth2/token`) e SSO externo (`/api/v1/auth/oauth2/external`).
+  - RBAC estrito por perfil (`Customer`, `StoreOwner`, `Admin`).
+- **Padrões Fintech**:
+  - **Idempotência**: Middleware `Idempotency-Key` prevenindo criação duplicada de pedidos/avaliações com validação de hash SHA-256 do payload (`409 Conflict` em reuso divergente e replay seguro em retentativas).
+  - **Trilha de Auditoria Imutável**: Tabela `AuditLogs` gravando ator, ação, entidade, `X-Correlation-ID` e hash SHA-256 de cada operação sensível.
+  - **Rastreabilidade distribuída**: Cabeçalho `X-Correlation-ID` propagado do frontend até o backend .NET e a API FastAPI do BERTimbau.
+  - **Privacidade (LGPD/PII)**: Logs do pipeline ABSA mascaram e-mails/telefones e omitem texto completo das avaliações por padrão.
+
+---
+
+## Estrutura do Monorepo
 
 ```text
-bertimbau-absa/
-├── configs/                      # Arquivos de configuração versionados
-│   ├── taxonomy.yaml             # Taxonomia canônica, entidades e aspectos
-│   ├── train_aspects.yaml        # Hiperparâmetros do Detector de Aspectos
-│   ├── train_sentiment.yaml      # Hiperparâmetros do Classificador de Sentimento
-│   └── api.yaml                  # Configurações do servidor FastAPI
-├── data/
-│   ├── raw/                      # Dados brutos de entrada (.jsonl / .csv)
-│   ├── processed/                # Dados normalizados e agregados
-│   └── splits/                   # Partições isoladas (train, val, test)
-├── artifacts/                    # Modelos, tokenizers, thresholds e metadados
-├── reports/                      # Relatórios de validação e avaliação
-├── scripts/                      # Linha de comando para pipeline
-│   ├── validate_dataset.py       # Validador de consistência e distribuição
-│   ├── prepare_dataset.py        # Normalização e filtro de conflitos
-│   ├── split_dataset.py          # Particionamento sem vazamento de review_id
-│   ├── train_aspect_detector.py  # Treinamento e calibração do Modelo 1
-│   ├── train_sentiment_classifier.py # Treinamento do Modelo 2
-│   ├── evaluate_pipeline.py      # Avaliação integrada do pipeline completo
-│   └── export_models.py          # Empacotamento de artefatos para produção
-├── src/absa/                     # Pacote Python principal
-│   ├── __init__.py
-│   ├── config.py                 # Dataclasses de configuração
-│   ├── taxonomy.py               # Singleton de taxonomia
-│   ├── preprocessing.py          # Normalização textual e análise de truncamento
-│   ├── datasets.py               # Manipulação de registros, vetores e hashes
-│   ├── metrics.py                # F1 macro/micro, thresholds, matrizes e latência
-│   ├── inference.py              # Motor de inferência desacoplado
-│   ├── logging_config.py         # Logging estruturado e mascaramento de PII
-│   ├── models/                   # Módulos PyTorch / Transformers
-│   │   ├── aspect_detector.py
-│   │   └── sentiment_classifier.py
-│   └── api/                      # Camada REST FastAPI
-│       ├── main.py
-│       ├── routes.py
-│       ├── schemas.py
-│       └── dependencies.py
-├── tests/                        # 35 testes automatizados (unit & integration)
-├── Dockerfile                    # Container Docker multi-stage
-├── docker-compose.yml            # Orquestração local
-├── pyproject.toml                # Gerenciador de pacote e dependências
-└── requirements.txt
+YourFood.AI/
+├── backend/                          # ASP.NET Core 10 + EF Core + PostgreSQL
+│   ├── YourFood.slnx
+│   ├── Dockerfile
+│   ├── src/
+│   │   ├── YourFood.Domain/          # Entidades, Enums, Taxonomia, Exceções, Interfaces de Repositório
+│   │   ├── YourFood.Application/     # DTOs, Serviços de Aplicação, Portas Externas
+│   │   ├── YourFood.Infrastructure/  # EF Core DbContext, Repositórios, Seeder, JWT/BCrypt, ABSA Client, CLI Runner
+│   │   └── YourFood.Api/             # Controllers REST, Middlewares Fintech (Idempotency/Correlation/Exception), Program.cs
+│   └── tests/YourFood.Tests/         # Testes xUnit (State Machine, Ledger, Conflitos ABSA, Exportação Canônica)
+├── web-delivery/                     # App Web de Delivery (React + Vite + TS)
+│   ├── Dockerfile
+│   └── src/                          # Auth JWT/OAuth2, Fluxo Cliente, Portal do Restaurante
+├── mobile-delivery/                  # App Mobile de Delivery (React Native + Expo + TS)
+│   ├── App.tsx
+│   └── src/                          # Auth, Fluxo Cliente e Fluxo Restaurante mobile
+├── web-pipeline-console/             # Sistema Web Separado de MLOps & Inferência (React + Vite + TS)
+│   ├── Dockerfile
+│   └── src/                          # Telemetria, Pipeline Runner, Playground de Inferência, Anotação & Auditoria
+├── bertimbau-absa/                   # Pipeline ML BERTimbau ABSA (Python + PyTorch + FastAPI)
+│   ├── configs/                      # taxonomy.yaml, train_aspects.yaml, train_sentiment.yaml, api.yaml
+│   ├── scripts/                      # validate, prepare, split, train_aspect_detector, train_sentiment_classifier, evaluate, export
+│   ├── src/absa/                     # Modelos PyTorch, Datasets, Métricas, Inferência e API FastAPI
+│   ├── tests/                        # 35 testes automatizados (unitários, integração e 12 casos linguísticos)
+│   ├── requirements.txt              # Dependências completas (treinamento + testes)
+│   ├── requirements-inference.txt    # Dependências enxutas de inferência para o container Docker
+│   └── Dockerfile                    # Imagem enxuta com PyTorch CPU-only e usuário não-root
+├── docker-compose.yml                # Orquestração completa dos 5 serviços
+├── LICENSE
+└── README.md
 ```
 
 ---
 
-## 🚀 Instalação e Ambiente
+## Catálogo de Endpoints REST
 
-### Pré-requisitos
-- Python 3.11+
-- CUDA 11.8+ ou 12.0+ (opcional; suporte total a CPU com detecção automática)
+### Autenticação & OAuth2 (`/api/v1/auth`)
+- `POST /register` — Cadastro de usuário (`Customer`, `StoreOwner`, `Admin`)
+- `POST /login` — Autenticação com retorno de Access Token JWT + Refresh Token
+- `POST /refresh` — Rotação segura de Refresh Token
+- `POST /oauth2/authorize` — Emissão de Authorization Code com suporte a PKCE (`code_challenge`)
+- `POST /oauth2/token` — Troca de `authorization_code` (com verificação PKCE) ou `refresh_token` por JWT
+- `POST /oauth2/external` — Login/vinculação via provedor OAuth2 externo (Google, GitHub)
+- `GET /me` — Perfil autenticado
 
-### Passo a passo
-```bash
-# Entre na pasta do projeto
-cd bertimbau-absa
+### Lojas e Cardápios (`/api/v1/stores`)
+- `GET /` — Listagem com filtro por busca e categoria
+- `GET /{storeId}` — Detalhes da loja e cardápio
+- `GET /mine` — Lojas do comerciante autenticado (`StoreOwner`, `Admin`)
+- `POST /` & `PUT /{storeId}` — Cadastro e atualização de estabelecimentos
+- `POST /{storeId}/items` & `PUT /items/{menuItemId}` — Gestão de itens do cardápio
 
-# Crie e ative um ambiente virtual
-python -m venv .venv
-source .venv/bin/activate       # Linux/macOS
-# ou no Windows:
-# .venv\Scripts\activate
+### Pedidos e Tracking por Estados (`/api/v1/orders`)
+- `POST /` — Criação de pedido com suporte a `Idempotency-Key` e geração de `LedgerEntry`
+- `GET /my` — Pedidos do cliente com linha do tempo de estados
+- `GET /merchant` — Pedidos recebidos pelas lojas do comerciante
+- `GET /{orderId}` — Detalhes completos com itens, histórico de estados e ledger
+- `PATCH /{orderId}/status` — Transição validada na máquina de estados
 
-# Instale as dependências
-pip install -r requirements.txt
-pip install -e .
+### Coleta de Avaliações & Anotações ABSA (`/api/v1/reviews`)
+- `POST /` — Submissão de avaliação em pedido entregue (com inferência opcional imediata e anotações)
+- `GET /` — Listagem filtrável por loja, pendentes de inferência ou conflitos (`onlyFlagged`)
+- `PUT /{reviewId}/annotations` — Edição de anotações ground-truth e resolução de conflitos
+- `POST /{reviewId}/analyze` — Execução de inferência BERTimbau em avaliação específica
+- `POST /analyze-batch` — Inferência em lote sobre avaliações pendentes (`Admin`)
 
-# Configure as variáveis de ambiente
-cp .env.example .env
-```
-
----
-
-## 🔄 Ciclo Completo de Dados
-
-O repositório inclui uma massa de dados de exemplo em `data/raw/sample_reviews.jsonl`.
-
-### 1. Validação do Dataset
-Executa validação estrutural, checa conformidade com a taxonomia, detecta divergências de texto para o mesmo `review_id`, identifica conflitos de polaridade e calcula riscos de desbalanceamento:
-```bash
-python scripts/validate_dataset.py --input data/raw/sample_reviews.jsonl --output reports/validation
-```
-Gera relatórios em `reports/validation/validation_report.json` e `reports/validation/validation_report.md`.
-
-### 2. Preparação e Normalização
-Normaliza espaçamentos e quebras de linha preservando acentuação, caixa e pontuação. Identifica e isola registros conflitantes em `reviews_flagged.jsonl`:
-```bash
-python scripts/prepare_dataset.py --input data/raw/sample_reviews.jsonl --output data/processed
-```
-
-### 3. Divisão sem Vazamento (70% / 15% / 15%)
-Garante que todas as menções do mesmo `review_id` pertençam estritamente à mesma partição, priorizando agrupamento por `user_id` > `order_id` > `review_id` ou temporal:
-```bash
-python scripts/split_dataset.py --input data/processed/reviews.jsonl --output data/splits --seed 42
-```
-Gera `split_manifest.json` com os hashes SHA-256 e estatísticas de cada divisão.
+### Orquestração do Pipeline & Inferência MLOps (`/api/v1/pipeline`)
+- `GET /taxonomy` — Taxonomia oficial versionada
+- `GET /health` — Saúde em tempo real da API FastAPI do BERTimbau
+- `GET /analytics` — Métricas consolidadas por aspecto e entidade de negócio
+- `POST /export` — Exportação canônica `.jsonl` ou `.csv` para `bertimbau-absa/data/raw/`
+- `POST /jobs` & `GET /jobs` — Disparo e monitoramento dos scripts Python do pipeline
+- `POST /inference/analyze` — Proxy de inferência completa (Modelo 1 + Modelo 2)
+- `POST /inference/classify-sentiment` — Diagnóstico isolado do Modelo 2 por aspecto
+- `GET /audit-logs` — Consulta à trilha de auditoria imutável (`Admin`)
 
 ---
 
-## 🎯 Treinamento dos Modelos
+## Execução Rápida com Docker Compose
 
-### Modelo 1: Detector Multirrótulo de Aspectos
-```bash
-python scripts/train_aspect_detector.py --config configs/train_aspects.yaml
-```
-- Aplica Early Stopping avaliando Macro F1.
-- Calcula os melhores limiares de decisão por aspecto (`thresholds.json`) sobre a validação.
-- Exporta modelo, tokenizer, rótulos e metadados em `artifacts/aspect-detector/bertimbau-aspects-v1/`.
-
-### Modelo 2: Classificador de Sentimento por Aspecto
-```bash
-python scripts/train_sentiment_classifier.py --config configs/train_sentiment.yaml
-```
-- Classifica sentimento em pares `[texto, aspecto]`.
-- Aplica balanceamento de classes com `CrossEntropyLoss`.
-- Salva o melhor modelo em `artifacts/sentiment-classifier/bertimbau-aspect-sentiment-v1/`.
-
----
-
-## 📊 Avaliação Integrada do Pipeline
-
-Avalia a propagação de erros de ponta a ponta sobre o conjunto de teste cego:
-```bash
-python scripts/evaluate_pipeline.py --input data/splits/test.jsonl --output reports/final
-```
-
-O relatório discrimina com clareza:
-- **Precision, Recall e F1** de pares exatos `(aspecto, sentimento)`.
-- **Taxa de avaliações 100% corretas**.
-- **Erros de detecção de aspecto** (falsos positivos e falsos negativos por categoria).
-- **Erros de sentimento** quando o aspecto foi corretamente detectado.
-- **Perfil de latência** (média, p50, p95 e p99 em milissegundos).
-
----
-
-## 🌐 API REST (FastAPI)
-
-Inicie o servidor de inferência:
-```bash
-uvicorn absa.api.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Acesse a documentação interativa:
-- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-- ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-
-### Endpoints e Exemplos
-
-#### 1. Verificação de Saúde (`GET /health`)
-```bash
-curl -X GET http://localhost:8000/health
-```
-```json
-{
-  "status": "ok",
-  "aspectModelLoaded": true,
-  "sentimentModelLoaded": true
-}
-```
-
-#### 2. Análise de Avaliação (`POST /api/v1/reviews/analyze`)
-```bash
-curl -X POST http://localhost:8000/api/v1/reviews/analyze \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reviewId": "9001",
-    "text": "O hambúrguer estava muito bom, mas chegou frio e a entrega atrasou mais de uma hora."
-  }'
-```
-
-**Resposta:**
-```json
-{
-  "reviewId": "9001",
-  "text": "O hambúrguer estava muito bom, mas chegou frio e a entrega atrasou mais de uma hora.",
-  "aspects": [
-    {
-      "entity": "produto",
-      "aspect": "sabor",
-      "aspectProbability": 0.9621,
-      "sentiment": "positivo",
-      "sentimentProbability": 0.9412
-    },
-    {
-      "entity": "produto",
-      "aspect": "temperatura",
-      "aspectProbability": 0.9184,
-      "sentiment": "negativo",
-      "sentimentProbability": 0.9733
-    },
-    {
-      "entity": "entrega",
-      "aspect": "tempo_entrega",
-      "aspectProbability": 0.9345,
-      "sentiment": "negativo",
-      "sentimentProbability": 0.9589
-    }
-  ],
-  "modelVersions": {
-    "aspectDetector": "bertimbau-aspects-v1",
-    "sentimentClassifier": "bertimbau-aspect-sentiment-v1",
-    "taxonomy": "food-reviews-taxonomy-v1"
-  },
-  "processingTimeMs": 58.4
-}
-```
-
-*Caso a avaliação não mencione nenhum aspecto (ex: `"Nota 1, não gostei"`), o campo `aspects` retorna uma lista vazia `[]` conforme especificação.*
-
-#### 3. Análise em Lote (`POST /api/v1/reviews/analyze-batch`)
-Permite submeter uma lista de avaliações em uma única chamada HTTP, respeitando o limite configurável de lote (`MAX_BATCH_SIZE=32`).
-
-#### 4. Diagnóstico de Sentimento Condicionado (`POST /api/v1/reviews/classify-sentiment`)
-Endpoint de diagnóstico para teste isolado do Modelo 2:
-```bash
-curl -X POST http://localhost:8000/api/v1/reviews/classify-sentiment \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "A pizza veio totalmente fria.",
-    "aspect": "temperatura"
-  }'
-```
-*Aspectos fora da taxonomia oficial são rejeitados com código HTTP 422.*
-
----
-
-## 🐳 Execução com Docker
-
-O projeto inclui um container otimizado com usuário não-root e healthcheck nativo:
+Suba toda a infraestrutura integrada com um único comando:
 
 ```bash
-# Construção e inicialização via Docker Compose
 docker compose up -d --build
-
-# Verificação dos logs
-docker compose logs -f absa-api
-
-# Teste de saúde
-curl -f http://localhost:8000/health
 ```
+
+Após a inicialização, acesse:
+
+| Aplicação | URL |
+|---|---|
+| **Delivery Web (Cliente & Restaurante · Responsivo Mobile/Desktop)** | [http://localhost:5173](http://localhost:5173) |
+| **Console Web de Pipeline & Inferência (MLOps Studio)** | [http://localhost:5174](http://localhost:5174) |
+| **Backend ASP.NET Core Swagger UI** | [http://localhost:5000/swagger](http://localhost:5000/swagger) |
+| **API BERTimbau ABSA (FastAPI Docs)** | [http://localhost:8000/docs](http://localhost:8000/docs) |
+
+> **Notas sobre Docker e Inferência:**
+> - As etapas de dados do pipeline (`Exportar Dataset`, `Validar`, `Preparar`, `Dividir` e `Preparação Completa`) executam nativamente a partir do **Console MLOps** dentro do container `backend-api`.
+> - A imagem `absa-api` utiliza `requirements-inference.txt` com **PyTorch CPU-only** (sem bibliotecas de treino/CUDA na imagem final). Antes do primeiro treinamento dos pesos em `bertimbau-absa/artifacts/`, a API sobe normalmente em modo `online` e retorna HTTP `503` nos endpoints de inferência até que os artefatos treinados sejam exportados e o container `absa-api` reiniciado.
 
 ---
 
-## 🧪 Testes Automatizados
+## Execução Local por Módulo
 
-A suíte conta com **35 testes automatizados** cobrindo 100% dos requisitos funcionais, unitários, de integração e linguísticos:
-
+### 1. Banco PostgreSQL
 ```bash
-pytest tests/ -v
+docker compose up -d postgres
 ```
 
-### Casos Linguísticos Cobertos:
-- ✅ Avaliações positivas diretas (`Gostei muito do sabor.`)
-- ✅ Negações preservadas (`Não estava frio.`, `Não demorou nada.`)
-- ✅ Múltiplos aspectos com polaridades divergentes (`Veio rápido, mas a embalagem estava aberta.`)
-- ✅ Ausência correta de aspectos (`Nota 1, não gostei.`)
-- ✅ Preservação de erros ortográficos e gírias populares (`x-burgue tava mto bom e chego rapido!`)
-- ✅ Avaliações contendo exclusivamente emojis (`🍕😋❤️`)
-- ✅ Rejeição de avaliações em branco ou compostas apenas de espaços
+### 2. Backend ASP.NET Core 10
+```bash
+cd backend
+dotnet test
+dotnet run --project src/YourFood.Api
+```
+
+### 3. Delivery Web (React + Vite)
+```bash
+cd web-delivery
+npm install
+npm run dev
+```
+
+### 4. Delivery Mobile (React Native + Expo)
+```bash
+cd mobile-delivery
+npm install
+npm start
+```
+> Configure `EXPO_PUBLIC_API_URL` caso rode em dispositivo físico apontando para o IP local da máquina (ex.: `http://192.168.0.10:5000`). Em emulador Android, o padrão `http://10.0.2.2:5000` já funciona direto.
+
+### 5. Console Web de Pipeline & Inferência (Sistema Separado)
+```bash
+cd web-pipeline-console
+npm install
+npm run dev
+```
+
+### 6. Pipeline BERTimbau ABSA (CLI & API FastAPI)
+```bash
+cd bertimbau-absa
+pip install -r requirements.txt
+pytest tests/ -v
+uvicorn absa.api.main:app --host 0.0.0.0 --port 8000
+```
 
 ---
 
-## 🔒 Segurança, Privacidade e Observabilidade
+## Contas de Demonstração (Seed Automático)
 
-- **Proteção de Dados Pessoais (PII)**: Expressões regulares filtram e mascaram endereços de e-mail e telefones antes de qualquer saída de log.
-- **Privacidade de Texto**: O texto completo da avaliação não é logado em produção por padrão (`LOG_FULL_TEXT=false`).
-- **Rastreabilidade**: Middleware injeta e propaga cabeçalho `X-Correlation-ID` em todas as requisições.
-- **Métricas**: Tempo de resposta medido em microssegundos e exposto no header `X-Response-Time-Ms`.
+Na primeira execução, o [DatabaseSeeder.cs](./backend/src/YourFood.Infrastructure/Persistence/DatabaseSeeder.cs) cria automaticamente 3 usuários, 3 restaurantes (*Brasa & Blend Burger*, *Forno D'Oro Pizzaria* e *Kuro Sushi Lab*), cardápios completos, pedidos entregues e avaliações anotadas prontas para exportar e treinar:
 
----
-
-## 📌 Critérios para Inclusão de Novos Aspectos
-
-Para preservar a estabilidade da taxonomia e do recomendador downstream, novos aspectos só devem ser adicionados mediante:
-1. Utilidade comprovada para a operação do marketplace ou recomendador;
-2. Definição disjunta e sem sobreposição com os 12 aspectos do MVP;
-3. Volume mínimo de **200 exemplos anotados** para experimentação e **500 exemplos** para produção;
-4. Distribuição balanceada de polaridades (`positivo`, `negativo` e `neutro`);
-5. Validação em conjunto de teste sem degradação do Macro F1 das classes vigentes.
+| Perfil | E-mail | Senha | Sistema |
+|---|---|---|---|
+| **Cliente** | `customer@yourfood.ai` | `Customer@123` | `web-delivery` e `mobile-delivery` |
+| **Dono de Restaurante** | `merchant@yourfood.ai` | `Merchant@123` | `web-delivery` e `mobile-delivery` |
+| **Administrador MLOps** | `admin@yourfood.ai` | `Admin@123` | `web-pipeline-console` |
 
 ---
 
-## 📄 Licença
+## Testes e Validação
 
-Distribuído sob a licença MIT. Consulte `LICENSE` para mais detalhes.
+| Módulo | Suíte / Comando | Status |
+|---|---|---|
+| **Backend (.NET 10)** | `cd backend && dotnet test` | 5/5 testes xUnit aprovados (State Machine, Ledger, Persistência de Transições, Conflitos, Exportação Canônica) |
+| **Pipeline ML (Python)** | `cd bertimbau-absa && pytest tests/ -v` | 35/35 testes aprovados (unitários, API, E2E e 12 casos linguísticos) |
+| **Delivery Web** | `cd web-delivery && npm run build` | TypeScript strict + Vite production bundle + layout mobile responsivo |
+| **Pipeline Console Web** | `cd web-pipeline-console && npm run build` | TypeScript strict + Vite production bundle + layout mobile responsivo |
+| **Delivery Mobile (RN)** | `cd mobile-delivery && npm run typecheck` | TypeScript strict verificado sem erros |
+| **Docker Compose Stack** | `docker compose up -d --build` | 5 serviços em execução validados com smoke test (Orders PATCH + Pipeline `Export`/`FullDataPreparation` exit 0) |
+
+---
+
+## Licença
+
+Distribuído sob a licença **MIT**. Consulte o arquivo [LICENSE](./LICENSE) para mais detalhes.

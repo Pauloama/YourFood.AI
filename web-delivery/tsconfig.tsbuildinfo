@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/declarations.d.ts","./src/main.tsx","./src/components/authview.tsx","./src/components/customerdeliveryview.tsx","./src/components/merchantportalview.tsx","./src/context/authcontext.tsx","./src/services/api.ts","./src/types/models.ts"],"version":"5.9.3"}
